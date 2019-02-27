@@ -1,0 +1,218 @@
+import java.io.File;
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws FileNotFoundException {
+
+        String filename;
+        int numvertices;
+
+
+        System.out.print("Input name of file with extension: \n");
+        Scanner reader = new Scanner(System.in);
+        filename = reader.nextLine();
+        System.out.print("input number of vertices :  \n");
+        numvertices = reader.nextInt();
+
+        vertex[] vertices = new vertex[numvertices];
+
+
+        edge[] X = new edge[numvertices - 1];
+
+        for(int a =0; a < numvertices; ++a)
+        {
+            vertices[a] = new vertex(a);
+        }
+
+        set sets[] = new set[numvertices];
+
+        for(int a=0; a < numvertices; ++a) {
+            sets[a] = new set();
+            sets[a].root = a;
+            sets[a].rank = 0;
+        }
+
+        for (int a = 0; a < numvertices; ++a)
+        {
+            sets[a].root = a;
+            sets[a].rank = 0;
+        }
+
+        Scanner scanner = new Scanner(new File(filename));
+        edge[][] Matrix = new edge[numvertices][numvertices];
+
+        int i = 0, j = 0;
+
+            while (i < numvertices) {
+                while (j < numvertices) {
+                   int temp= scanner.nextInt();
+
+                    if (temp==0 || j<i)
+                    {
+
+                    }
+
+                    else {
+                        Matrix[i][j] = new edge(temp, vertices[i], vertices[j]);
+                    }
+                    ++j;
+                }
+                j=0;
+                ++i;
+            }
+
+
+        //GFG.print2D(Matrix);
+
+        edgeComparator compare = new edgeComparator();
+        PriorityQueue<edge> pq = new PriorityQueue<>(compare);
+
+
+
+        for(int a=0;a< numvertices;++a)
+        {
+            for(int b=0;b< numvertices;++b)
+            {
+                if(Matrix[a][b]==null)
+                {
+
+                }
+                else
+                    {
+                        pq.add(Matrix[a][b]);
+                    }
+
+            }
+
+        }
+
+        int numedges= 0;
+        while ( numedges < numvertices - 2)
+        {
+            // Step 2: Pick the smallest edge. And increment
+            // the index for next iteration
+            edge currentE =  pq.poll();
+            if(numedges == 0)
+            {
+                X[0]= currentE;
+            }
+
+            edge nextE= pq.poll();
+
+            int x = find(sets, currentE.vertex1.vertexnum);
+            int y = find(sets, nextE.vertex2.vertexnum);
+
+            // If including this edge does't cause cycle,
+            // include it in result and increment the index
+            // of result for next edge
+            if (x != y)
+            {
+                X[++numedges] = nextE;
+                Union(sets, x, y);
+            }
+            // Else discard the next_edge
+        }
+
+        //while(!pq.isEmpty()) {
+          //  System.out.println(pq.poll().value);
+        //}
+        int a =0 ;
+        System.out.print("Edges in MST (Vertex numbers start at index 0):\n\n");
+        while( a < X.length)
+        {
+            System.out.print("Edge " + (a+1) + "  \n Value: " + X[a].value + "\nConnects Vertex " + (X[a].vertex1.vertexnum) + " to Vertex " + (X[a].vertex2.vertexnum)  + "\n\n");
+            ++a;
+        }
+    }
+
+    static int  find(set sets[], int a)
+    {
+        // find root and make root as parent of i
+        // (path compression)
+
+        if (sets[a].root != a)
+            sets[a].root = find(sets, sets[a].root);
+
+        return sets[a].root;
+    }
+
+    static void Union(set sets[], int a, int b)
+    {
+        int roota = find(sets, a);
+        int rootb = find(sets, b);
+
+        // Attach smaller rank tree under root of high
+        // rank tree (Union by Rank)
+        if (sets[roota].rank < sets[rootb].rank)
+            sets[roota].root = rootb;
+        else if (sets[roota].rank > sets[rootb].rank)
+            sets[rootb].root = roota;
+
+            // If ranks are same, then make one as root and
+            // increment its rank by one
+        else
+        {
+            sets[rootb].root = roota;
+            sets[roota].rank++;
+        }
+    }
+
+}
+
+
+
+class edge {
+   public vertex vertex1;
+   public vertex vertex2;
+   public int value;
+
+    edge(int value, vertex vertex1, vertex vertex2) {
+        this.value = value;
+         this.vertex1 = vertex1;
+         this.vertex2 = vertex2;
+    }
+
+
+}
+
+  class vertex
+{
+   public int vertexnum;
+
+    vertex(int vertexnum)
+    {
+        this.vertexnum=vertexnum;
+    }
+
+
+}
+
+class set
+{
+ int root;
+ int rank;
+
+}
+
+
+/*
+class GFG {
+
+    public static void print2D(edge mat[][])
+    {
+        // Loop through all rows
+        for (int i = 0; i < mat.length; i++) {
+
+            // Loop through all elements of current row
+            for (int j = 0; j < mat[i].length; j++) {
+                if (!(i==j || j<i)) {
+                    System.out.print(mat[i][j].value + " ");
+                }
+
+            }
+            System.out.print("\n");
+        }
+    }
+}
+*/
